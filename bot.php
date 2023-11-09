@@ -390,6 +390,25 @@ if(($data=="botSettings" or preg_match("/^changeBot(\w+)/",$data,$match)) && ($f
     }
     editText($message_id,$mainValues['change_bot_settings_message'],getBotSettingKeys());
 }
+if($data=="mineBTNType" && ($from_id == $admin || $userInfo['isAdmin'] == true)){
+    $newValue = $botState['mineBTNType']=="on"?"off":"on";
+    $botState['mineBTNType']= $newValue;
+
+    $stmt = $connection->prepare("SELECT * FROM `setting` WHERE `type` = 'BOT_STATES'");
+    $stmt->execute();
+    $isExists = $stmt->get_result();
+    $stmt->close();
+    if($isExists->num_rows>0) $query = "UPDATE `setting` SET `value` = ? WHERE `type` = 'BOT_STATES'";
+    else $query = "INSERT INTO `setting` (`type`, `value`) VALUES ('BOT_STATES', ?)";
+    $newData = json_encode($botState);
+    
+    $stmt = $connection->prepare($query);
+    $stmt->bind_param("s", $newData);
+    $stmt->execute();
+    $stmt->close();
+
+    editText($message_id,$mainValues['change_bot_settings_message'],getBotSettingKeys());
+}
 if($data=="changeUpdateConfigLinkState" && ($from_id == $admin || $userInfo['isAdmin'] == true)){
     $newValue = $botState['updateConnectionState']=="robot"?"site":"robot";
     $botState['updateConnectionState']= $newValue;
@@ -690,7 +709,7 @@ if($userInfo['step'] == "editRewardTime" && ($from_id == $admin || $userInfo['is
     setUser();
     exit();
 }
-if($data=="inviteFriends"){
+if($data=="inviteFriends" or $text==$buttonValues['invite_friends']){
     $stmt = $connection->prepare("SELECT * FROM `setting` WHERE `type` = 'INVITE_BANNER_TEXT'");
     $stmt->execute();
     $inviteText = $stmt->get_result()->fetch_assoc()['value'];
@@ -720,7 +739,7 @@ if($data=="inviteFriends"){
     }
     else alert("این قسمت غیر فعال است");
 }
-if($data=="myInfo"){
+if($data=="myInfo" or $text==$buttonValues['my_info']){
     $stmt = $connection->prepare("SELECT * FROM `orders_list` WHERE `userid` = ?");
     $stmt->bind_param("i", $from_id);
     $stmt->execute();
@@ -738,6 +757,7 @@ if($data=="myInfo"){
             ['text'=>$buttonValues['back_button'],'callback_data'=>"mainMenu"]
             ]
         ]]);
+    if($botState['mineBTNType'] == "on"){
     editText($message_id, "
 💞 اطلاعات حساب شما:
     
@@ -750,6 +770,21 @@ if($data=="myInfo"){
 ⁮⁮ ⁮⁮ ⁮⁮ ⁮⁮
 ",
             $keys,"html");
+}else{
+    sendMessage("
+💞 اطلاعات حساب شما:
+    
+🔰 شناسه کاربری: <code> $from_id </code>
+🍄 یوزرنیم: <code> @$username </code>
+👤 اسم:  <code> $first_name </code>
+💰 موجودی: <code> $myWallet </code>
+
+👈🏻 کل سرویس ها : <code> $totalBuys </code> عدد
+⁮⁮ ⁮⁮ ⁮⁮ ⁮⁮
+",
+            $keys,"html");
+
+}
 }
 if($data=="transferMyWallet"){
     if($userInfo['wallet'] > 0 ){
@@ -796,7 +831,7 @@ if(preg_match('/^tranfserUserAmount(\d+)/',$userInfo['step'],$match) && $text !=
         }else sendMessage("لطفا عددی بزرگتر از صفر وارد کنید");
     }else sendMessage($mainValues['send_only_number']);
 }
-if($data=="increaseMyWallet"){
+if($data=="increaseMyWallet" or $text==$buttonValues['sharj']){
     delMessage();
     sendMessage("🙂 عزیزم مقدار شارژ مورد نظر خود را به تومان وارد کن (بیشتر از 5000 تومان)",$cancelKey);
     setUser($data);
@@ -1097,14 +1132,14 @@ if($userInfo['step'] == "editLockChannel" && ($from_id == $admin || $userInfo['i
     }
     sendMessage($mainValues['the_bot_in_not_admin']);
 }
-if (($data == "agentOneBuy" || $data=='buySubscription' || $data == "agentMuchBuy") && ($botState['sellState']=="on" || ($from_id == $admin || $userInfo['isAdmin'] == true))){
+if (($data == "agentOneBuy" or $text==$buttonValues['agent_one_buy'] || $data=='buySubscription' or $text==$buttonValues['buy_subscriptions'] || $data == "agentMuchBuy" or $text==$buttonValues['agent_much_buy']) && ($botState['sellState']=="on" || ($from_id == $admin || $userInfo['isAdmin'] == true))){
     if($botState['cartToCartState'] == "off" && $botState['walletState'] == "off"){
         alert($mainValues['selling_is_off']);
         exit();
     }
-    if($data=="buySubscription") setUser('','temp');
-    elseif($data=="agentOneBuy") setUser('agentBuy', 'temp');
-    elseif($data== "agentMuchBuy") setUser('agentMuchBuy', 'temp');
+    if($data=="buySubscription" or $text==$buttonValues['buy_subscriptions']) setUser('','temp');
+    elseif($data=="agentOneBuy" or $text==$buttonValues['agent_one_buy']) setUser('agentBuy', 'temp');
+    elseif($data== "agentMuchBuy" or $text==$buttonValues['agent_much_buy']) setUser('agentMuchBuy', 'temp');
     
     $stmt = $connection->prepare("SELECT * FROM `server_info` WHERE `active`=1 and `state` = 1 and `ucount` > 0 ORDER BY `id` ASC");
     $stmt->execute();
@@ -1123,7 +1158,11 @@ if (($data == "agentOneBuy" || $data=='buySubscription' || $data == "agentMuchBu
     }
     $keyboard = array_chunk($keyboard,1);
     $keyboard[] = [['text'=>$buttonValues['back_to_main'],'callback_data'=>"mainMenu"]];
+    if ($botState['mineBTNType'] == "on") {
     editText($message_id, $mainValues['buy_sub_select_location'], json_encode(['inline_keyboard'=>$keyboard]));
+    } else {
+    sendMessage($mainValues['buy_sub_select_location'], json_encode(['inline_keyboard'=>$keyboard]));
+    }
 }
 if ($data=='createMultipleAccounts' && ($from_id == $admin || $userInfo['isAdmin'] == true)){
     $stmt = $connection->prepare("SELECT * FROM `server_info` WHERE `active`=1 and `ucount` > 0 ORDER BY `id` ASC");
@@ -2575,7 +2614,7 @@ if(preg_match('/^haveDiscount(.+?)_(.*)/',$data,$match)){
     elseif($match[1] == "SelectPlan") setUser('discountSelectPlan' . $match[2]);
     elseif($match[1] == "Renew") setUser('discountRenew' . $match[2]);
 }
-if($data=="getTestAccount"){
+if($data=="getTestAccount" or $text==$buttonValues['test_account']){
     if($userInfo['freetrial'] != null && $from_id != $admin && $userInfo['isAdmin'] != true){
         alert("شما اکانت تست را قبلا استفاده کرده اید");
         exit();
@@ -2605,9 +2644,13 @@ if($data=="getTestAccount"){
 
         }
     	$keyboard[] = [['text' => $buttonValues['back_to_main'], 'callback_data' => "mainMenu"]];
+    if ($botState['mineBTNType'] == "on") {
         editText($message_id,"لطفا یکی از کلید های زیر را انتخاب کنید", json_encode(['inline_keyboard'=>$keyboard]), "HTML");
-    }else alert("این بخش موقتا غیر فعال است");
-}
+    } else {
+        sendMessage("لطفا یکی از کلید های زیر را انتخاب کنید" , json_encode(['inline_keyboard'=>$keyboard]));
+}    
+}else{ alert("این بخش موقتا غیر فعال است");
+}}
 if((preg_match('/^discountSelectPlan(\d+)_(\d+)_(\d+)/',$userInfo['step'],$match) || 
     preg_match('/selectPlan(\d+)_(\d+)/',$userInfo['step'], $match) || 
     preg_match('/enterAccountName(\d+)_(\d+)/',$userInfo['step'], $match) || 
@@ -3813,7 +3856,7 @@ if(preg_match('/payWithCartToCart(.*)/',$userInfo['step'], $match) and $text != 
         sendMessage($mainValues['please_send_only_image']);
     }
 }
-if($data=="availableServers"){
+if($data=="availableServers" or $text==$buttonValues['shared_existence']){
     $stmt = $connection->prepare("SELECT * FROM `server_plans` WHERE `acount` != 0 AND `inbound_id` != 0");
     $stmt->execute();
     $serversList = $stmt->get_result();
@@ -3849,9 +3892,13 @@ if($data=="availableServers"){
     }
     $keys[] = [['text'=>$buttonValues['back_button'],'callback_data'=>"mainMenu"]];
     $keys = json_encode(['inline_keyboard'=>$keys]);
+  if ($botState['mineBTNType'] == "on") {
     editText($message_id, "🟢 | موجودی پلن اشتراکی:", $keys);
+  } else {
+    sendMessage("🟢 | موجودی پلن اشتراکی:", $keys);
 }
-if($data=="availableServers2"){
+}
+if($data=="availableServers2" or $text==$buttonValues['individual_existence']){
     $stmt = $connection->prepare("SELECT * FROM `server_plans` WHERE `inbound_id` = 0");
     $stmt->execute();
     $serversList = $stmt->get_result();
@@ -3887,12 +3934,17 @@ if($data=="availableServers2"){
     }
     $keys[] = [['text'=>$buttonValues['back_button'],'callback_data'=>"mainMenu"]];
     $keys = json_encode(['inline_keyboard'=>$keys]);
+  if ($botState['mineBTNType'] == "on") {
     editText($message_id, "🟢 | موجودی پلن اختصاصی:", $keys);
+} else {
+    sendMessage("🟢 | موجودی پلن اختصاصی:", $keys);
+
 }
-if($data=="agencySettings" && $userInfo['is_agent'] == 1){
+}
+if($data=="agencySettings" or $text==$buttonValues['agency_setting'] && $userInfo['is_agent'] == 1){
     editText($message_id, $mainValues['agent_setting_message'] ,getAgentKeys());
 }
-if($data=="requestAgency"){
+if($data=="requestAgency" or $text==$buttonValues['request_agency']){
     if($userInfo['is_agent'] == 2){
         alert($mainValues['agency_request_already_sent']);
     }elseif($userInfo['is_agent'] == 0){
@@ -4221,13 +4273,23 @@ if(preg_match('/decline(\d+)_(\d+)/',$userInfo['step'],$match) and $text != $but
     
     sendMessage($text, null, null, $uid);
 }
-if($data=="supportSection"){
+if($data=="supportSection" or $text==$buttonValues['my_tickets']){
+  if($botState['mineBTNType'] == "on"){
     editText($message_id,"به بخش پشتیبانی خوش اومدی🛂\nلطفا، یکی از دکمه های زیر را انتخاب نمایید.",
         json_encode(['inline_keyboard'=>[
         [['text'=>"✉️ ثبت تیکت",'callback_data'=>"usersNewTicket"]],
         [['text'=>"تیکت های باز 📨",'callback_data'=>"usersOpenTickets"],['text'=>"📮 لیست تیکت ها", 'callback_data'=>"userAllTickets"]],
         [['text'=>$buttonValues['back_button'],'callback_data'=>"mainMenu"]]
         ]]));
+} else {
+    sendMessage("به بخش پشتیبانی خوش اومدی🛂\nلطفا، یکی از دکمه های زیر را انتخاب نمایید.",
+        json_encode(['inline_keyboard'=>[
+        [['text'=>"✉️ ثبت تیکت",'callback_data'=>"usersNewTicket"]],
+        [['text'=>"تیکت های باز 📨",'callback_data'=>"usersOpenTickets"],['text'=>"📮 لیست تیکت ها", 'callback_data'=>"userAllTickets"]],
+        [['text'=>$buttonValues['back_button'],'callback_data'=>"mainMenu"]]
+        ]]));
+
+}
 }
 if($data== "usersNewTicket"){
     $stmt = $connection->prepare("SELECT * FROM `setting` WHERE `type` = 'TICKETS_CATEGORY'");
@@ -5622,7 +5684,7 @@ if(preg_match('/^releaseRejectedAgent(\d+)/',$data,$match)){
         editText($message_id,"لیست کاربران رد شده از نمایندگی",$keys);
     }else editText($message_id,"کاربری یافت نشد",json_encode(['inline_keyboard'=>[[['text'=>$buttonValues['back_to_main'],'callback_data'=>"managePanel"]]]]));
 }
-if($data=="showUUIDLeft" && ($botState['searchState']=="on" || $from_id== $admin)){
+if($data=="showUUIDLeft" or $text==$buttonValues['search_config'] && ($botState['searchState']=="on" || $from_id== $admin)){
     delMessage();
     sendMessage($mainValues['send_config_uuid'],$cancelKey);
     setUser('showAccount');
@@ -6734,9 +6796,9 @@ if(preg_match('/^wizwizplanrial(\d+)/',$userInfo['step'], $match) && $text != $b
         sendMessage("بهت میگم قیمت وارد کن برداشتی یه چیز دیگه نوشتی 🫤 ( عدد وارد کن ) عجبا");
     }
 }
-if(($data == 'mySubscriptions' || $data == "agentConfigsList" or preg_match('/(changeAgentOrder|changeOrdersPage)(\d+)/',$data, $match) )&& ($botState['sellState']=="on" || $from_id ==$admin)){
+if(($data == 'mySubscriptions' or $text==$buttonValues['my_subscriptions'] || $data == "agentConfigsList" or $text==$buttonValues['my_subscriptions'] or preg_match('/(changeAgentOrder|changeOrdersPage)(\d+)/',$data, $match) )&& ($botState['sellState']=="on" || $from_id ==$admin)){
     $results_per_page = 50;
-    if($data == "agentConfigsList" || $match[1] == "changeAgentOrder") $stmt = $connection->prepare("SELECT * FROM `orders_list` WHERE `userid`=? AND `status`=1");  
+    if($data == "agentConfigsList" or $text==$buttonValues['my_subscriptions'] || $match[1] == "changeAgentOrder") $stmt = $connection->prepare("SELECT * FROM `orders_list` WHERE `userid`=? AND `status`=1");  
     else $stmt = $connection->prepare("SELECT * FROM `orders_list` WHERE `userid`=? AND `status`=1 AND `agent_bought` = 0");  
     $stmt->bind_param("i", $from_id);
     $stmt->execute();
@@ -6747,7 +6809,7 @@ if(($data == 'mySubscriptions' || $data == "agentConfigsList" or preg_match('/(c
     $page = $match[2] ??1;
     $page_first_result = ($page-1) * $results_per_page;  
     
-    if($data == "agentConfigsList" || $match[1] == "changeAgentOrder") $stmt = $connection->prepare("SELECT * FROM `orders_list` WHERE `userid`=? AND `status`=1 ORDER BY `id` DESC LIMIT ?, ?");
+    if($data == "agentConfigsList" or $text==$buttonValues['my_subscriptions'] || $match[1] == "changeAgentOrder") $stmt = $connection->prepare("SELECT * FROM `orders_list` WHERE `userid`=? AND `status`=1 ORDER BY `id` DESC LIMIT ?, ?");
     else $stmt = $connection->prepare("SELECT * FROM `orders_list` WHERE `userid`=? AND `status`=1 AND `agent_bought` = 0 ORDER BY `id` DESC LIMIT ?, ?");
     $stmt->bind_param("iii", $from_id, $page_first_result, $results_per_page);
     $stmt->execute();
@@ -6773,11 +6835,11 @@ if(($data == 'mySubscriptions' || $data == "agentConfigsList" or preg_match('/(c
     $lpm1 = $lastpage - 1;
     
     $buttons = [];
-    if ($prev > 0) $buttons[] = ['text' => "◀", 'callback_data' => (($data=="agentConfigsList" || $match[1] == "changeAgentOrder") ? "changeAgentOrder$prev":"changeOrdersPage$prev")];
+    if ($prev > 0) $buttons[] = ['text' => "◀", 'callback_data' => (($data=="agentConfigsList" or $text==$buttonValues['my_subscriptions'] || $match[1] == "changeAgentOrder") ? "changeAgentOrder$prev":"changeOrdersPage$prev")];
 
-    if ($next > 0 and $page != $number_of_page) $buttons[] = ['text' => "➡", 'callback_data' => (($data=="agentConfigsList" || $match[1] == "changeAgentOrder")?"changeAgentOrder$next":"changeOrdersPage$next")];   
+    if ($next > 0 and $page != $number_of_page) $buttons[] = ['text' => "➡", 'callback_data' => (($data=="agentConfigsList" or $text==$buttonValues['my_subscriptions'] || $match[1] == "changeAgentOrder")?"changeAgentOrder$next":"changeOrdersPage$next")];   
     $keyboard[] = $buttons;
-    if($data == "agentConfigsList" || $match[1] == "changeAgentOrder") $keyboard[] = [['text'=>$buttonValues['search_agent_config'],'callback_data'=>"searchAgentConfig"]];
+    if($data == "agentConfigsList" or $text==$buttonValues['my_subscriptions'] || $match[1] == "changeAgentOrder") $keyboard[] = [['text'=>$buttonValues['search_agent_config'],'callback_data'=>"searchAgentConfig"]];
     else $keyboard[] = [['text'=>$buttonValues['search_agent_config'],'callback_data'=>"searchMyConfig"]];
     $keyboard[] = [['text'=>$buttonValues['back_to_main'],'callback_data'=>"mainMenu"]];
     
@@ -9477,7 +9539,7 @@ if(preg_match('/^delDiscount(\d+)/',$data,$match)){
 if(preg_match('/^copyHash(.*)/',$data,$match)){
     sendMessage("<code>" . $match[1] . "</code>",null,"HTML");
 }
-if($data == "managePanel" and (($from_id == $admin || $userInfo['isAdmin'] == true))){
+if($data == "managePanel" or $text == "مدیریت ربات ⚙️" and (($from_id == $admin || $userInfo['isAdmin'] == true))){
     
     setUser();
     $msg = "
@@ -9488,9 +9550,13 @@ if($data == "managePanel" and (($from_id == $admin || $userInfo['isAdmin'] == tr
 
 🚪 /start
 ";
+  if ($botState['mineBTNType'] == "on") {
     editText($message_id, $msg, getAdminKeys());
+} else {
+    sendMessage($msg, getAdminKeys());
 }
-if($data == 'reciveApplications') {
+}
+if($data == 'reciveApplications' or $text==$buttonValues['application_links']) {
     $stmt = $connection->prepare("SELECT * FROM `needed_sofwares` WHERE `status`=1");
     $stmt->execute();
     $respd= $stmt->get_result();
@@ -9504,12 +9570,22 @@ if($data == 'reciveApplications') {
     }
     $keyboard[] = ['text'=>$buttonValues['back_to_main'],'callback_data'=>"mainMenu"];
     $keyboard = array_chunk($keyboard,1); 
+if($botState['mineBTNType'] == "on"){
     editText($message_id, "
 🔸می توانید به راحتی همه فایل ها را (به صورت رایگان) دریافت کنید
 📌 شما میتوانید برای راهنمای اتصال به سرویس کانال رسمی مارا دنبال کنید و همچنین از دکمه های زیر میتوانید برنامه های مورد نیاز هر سیستم عامل را دانلود کنید
 
 ✅ پیشنهاد ما برنامه V2rayng است زیرا کار با آن ساده است و برای تمام سیستم عامل ها قابل اجرا است، میتوانید به بخش سیستم عامل مورد نظر مراجعه کنید و لینک دانلود را دریافت کنید
 ", json_encode(['inline_keyboard'=>$keyboard]));
+} else {
+    sendMessage("
+🔸می توانید به راحتی همه فایل ها را (به صورت رایگان) دریافت کنید
+📌 شما میتوانید برای راهنمای اتصال به سرویس کانال رسمی مارا دنبال کنید و همچنین از دکمه های زیر میتوانید برنامه های مورد نیاز هر سیستم عامل را دانلود کنید
+
+✅ پیشنهاد ما برنامه V2rayng است زیرا کار با آن ساده است و برای تمام سیستم عامل ها قابل اجرا است، میتوانید به بخش سیستم عامل مورد نظر مراجعه کنید و لینک دانلود را دریافت کنید
+", json_encode(['inline_keyboard'=>$keyboard]));
+
+}
 }
 if ($text == $buttonValues['cancel']) {
     setUser();
