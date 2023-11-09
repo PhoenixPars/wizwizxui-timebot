@@ -922,6 +922,7 @@ function getBotSettingKeys(){
     $sellState = $botState['sellState']=="on"?$buttonValues['on']:$buttonValues['off'];
     $robotState = $botState['botState']=="on"?$buttonValues['on']:$buttonValues['off'];
     $searchState = $botState['searchState']=="on"?$buttonValues['on']:$buttonValues['off'];
+    $mineBTNType = $botState['mineBTNType']=="on"?$buttonValues['on']:$buttonValues['off'];
     $updateConnectionState = $botState['updateConnectionState']=="robot"?"از روی ربات":"از روی سایت";
     $rewaredTime = ($botState['rewaredTime']??0) . " ساعت";
     switch($botState['remark']){
@@ -1046,6 +1047,10 @@ function getBotSettingKeys(){
             ['text'=>$rewaredTime,'callback_data'=>'editRewardTime'],
             ['text'=>"ارسال گزارش درآمد", 'callback_data'=>'wizwizch']
             ],
+	[
+	    ['text'=>$mineBTNType,'callback_data'=>'mineBTNType'],
+	    ['text'=>"دکمه شیشه ای",'callback_data'=>'wizwizch']
+	    ],
         [['text'=>$buttonValues['back_button'],'callback_data'=>"managePanel"]]
         ]]);
 
