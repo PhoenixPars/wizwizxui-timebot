@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/wizwizdev/wizwizxui-timebot" target="_blank" rel="noopener noreferrer">
+  <a href="https://github.com/PhoenixPars/wizwizxui-timebot" target="_blank" rel="noopener noreferrer">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/27927279/227711552-d2bc1089-5666-477b-9be7-d7e50a5286dc.png">
       <img width="200" height="200" src="https://user-images.githubusercontent.com/27927279/227711552-d2bc1089-5666-477b-9be7-d7e50a5286dc.png">
@@ -21,7 +21,7 @@
 <h1 align="center"/>Welcome to wizwiz</h1>
 
 <p align="center">
-Easy to sell with <a href="https://github.com/wizwizdev/wizwizxui-timebot">wizwizxui-timebot</a> easy install with few clicks
+Easy to sell with <a href="https://github.com/PhoenixPars/wizwizxui-timebot">wizwizxui-timebot</a> easy install with few clicks
 </p>
 
 <p align="center">
@@ -31,10 +31,10 @@ wizwiz is a powerful and professional robot that supports several types of panel
 
 <div align=center>
 
-[![Telegram Channel](https://img.shields.io/endpoint?label=Channel&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fwizwizch&color=blue)](https://telegram.dog/wizwizch)
+[![Telegram Channel](https://img.shields.io/endpoint?label=Channel&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fwizwizch&color=blue)](https://telegram.dog/PhoenixPars)
 [![Telegram Group](https://img.shields.io/endpoint?color=neon&label=Support%20Group&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fwizwizdev)](https://telegram.dog/wizwizdev)
-<img src="https://img.shields.io/github/license/wizwizdev/wizwizxui-timebot?style=flat-square" />
-<img src="https://img.shields.io/github/v/release/wizwizdev/wizwizxui-timebot.svg" />
+<img src="https://img.shields.io/github/license/PhoenixPars/wizwizxui-timebot?style=flat-square" />
+<img src="https://img.shields.io/github/v/release/PhoenixPars/wizwizxui-timebot.svg" />
 <!-- <img src="https://visitor-badge.glitch.me/badge?page_id=wizwizdev.wizwizdev" />
  -->
 </div>
@@ -42,7 +42,7 @@ wizwiz is a powerful and professional robot that supports several types of panel
 <br>
 <br>
     <a align="center">
-        <img src="https://github.com/wizwizdev/wizwizxui-timebot/assets/27927279/f6635ea5-ab26-4c64-a7b8-952203f79763" />
+        <img src="https://github.com/PhoenixPars/wizwizxui-timebot/assets/27927279/f6635ea5-ab26-4c64-a7b8-952203f79763" />
     </a>     
 <br>
 <br>
@@ -55,7 +55,7 @@ wizwiz is a powerful and professional robot that supports several types of panel
 - The first option asks you for a domain, you must set the ip server for the domain and then enter it according to the example
 > Enter the installation command in the console and enter the required items to complete the installation.
 ```
-bash <(curl -s https://raw.githubusercontent.com/wizwizdev/wizwizxui-timebot/main/wizwiz.sh)
+bash <(curl -s https://raw.githubusercontent.com/PhoenixPars/wizwizxui-timebot/main/wizwiz.sh)
 ```
 - First enter "sub.domain.com" or "domain.com" without https
 - Enter email
@@ -75,7 +75,7 @@ bash <(curl -s https://raw.githubusercontent.com/wizwizdev/wizwizxui-timebot/mai
 
 - With every update and backup, a notification is sent to the manager robot
 ```
-bash <(curl -s https://raw.githubusercontent.com/wizwizdev/wizwizxui-timebot/main/update.sh)
+bash <(curl -s https://raw.githubusercontent.com/PhoenixPars/wizwizxui-timebot/main/update.sh)
 ```
 
 <br>
@@ -190,6 +190,8 @@ bash <(curl -Ls https://raw.githubusercontent.com/vaxilu/x-ui/master/install.sh)
 Be sure to join the group and channel and support us
 
 ## Contact Developer
+💎 Group: https://t.me/phoenixpars
+💎 Channel: https://t.me/phoenixpars
 💎 Group: https://t.me/wizwizdev
 💎 Channel: https://t.me/wizwizch
 
