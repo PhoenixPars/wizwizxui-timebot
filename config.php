@@ -48,7 +48,9 @@ function editKeys($keys = null, $msgId = null, $ci = null){
 function editText($msgId, $txt, $key = null, $parse = null, $ci = null){
     global $from_id;
     $ci = $ci??$from_id;
-
+    /*if($botState['agencyState'] == "off"){
+    $msgId = $msgId + 1;
+    }*/
     return bot('editMessageText', [
         'chat_id' => $ci,
         'message_id' => $msgId,
@@ -241,6 +243,7 @@ function getMainKeys(){
     $mainKeys = array();
     $temp = array();
 
+    if($botState['mineBTNType'] == "on"){
     if($botState['agencyState'] == "on" && $userInfo['is_agent'] == 1){
         $mainKeys = array_merge($mainKeys, [
             [['text'=>$buttonValues['agency_setting'],'callback_data'=>"agencySettings"]],
@@ -298,6 +301,65 @@ function getMainKeys(){
     array_push($mainKeys,$temp);
     if($from_id == $admin || $userInfo['isAdmin'] == true) array_push($mainKeys,[['text'=>"مدیریت ربات ⚙️",'callback_data'=>"managePanel"]]);
     return json_encode(['inline_keyboard'=>$mainKeys]); 
+    } else {
+    if($botState['agencyState'] == "on" && $userInfo['is_agent'] == 1){
+        $mainKeys = array_merge($mainKeys, [
+            [['text'=>$buttonValues['agency_setting']]],
+            [['text'=>$buttonValues['agent_one_buy']],['text'=>$buttonValues['agent_much_buy']]],
+            [['text'=>$buttonValues['my_subscriptions']]],
+            ]);
+    }else{
+        $mainKeys = array_merge($mainKeys,[
+            (($botState['agencyState'] == "on" && $userInfo['is_agent'] == 0)?[
+                ['text'=>$buttonValues['request_agency']]
+                ]:
+                []),
+            (($botState['sellState'] == "on" || $from_id == $admin || $userInfo['isAdmin'] == true)?
+                [['text'=>$buttonValues['my_subscriptions']],['text'=>$buttonValues['buy_subscriptions']]]
+                :
+                [['text'=>$buttonValues['my_subscriptions']]]
+                    )
+            ]);
+    }
+    $mainKeys = array_merge($mainKeys,[
+        (
+            ($botState['testAccount'] == "on")?[['text'=>$buttonValues['test_account']]]:
+                []
+            ),
+        [['text'=>$buttonValues['sharj']]],
+        [['text'=>$buttonValues['invite_friends']],['text'=>$buttonValues['my_info']]],
+        (($botState['sharedExistence'] == "on" && $botState['individualExistence'] == "on")?
+        [['text'=>$buttonValues['shared_existence']],['text'=>$buttonValues['individual_existence']]]:[]),
+        (($botState['sharedExistence'] == "on" && $botState['individualExistence'] != "on")?
+            [['text'=>$buttonValues['shared_existence']]]:[]),
+        (($botState['sharedExistence'] != "on" && $botState['individualExistence'] == "on")?
+            [['text'=>$buttonValues['individual_existence']]]:[]
+        ),
+        [['text'=>$buttonValues['application_links']],['text'=>$buttonValues['my_tickets']]],
+        (($botState['searchState']=="on" || $from_id == $admin || $userInfo['isAdmin'] == true)?
+            [['text'=>$buttonValues['search_config']]]
+            :[]),
+    ]);
+    $stmt = $connection->prepare("SELECT * FROM `setting` WHERE `type` LIKE '%MAIN_BUTTONS%'");
+    $stmt->execute();
+    $buttons = $stmt->get_result();
+    $stmt->close();
+    if($buttons->num_rows >0){
+        while($row = $buttons->fetch_assoc()){
+            $rowId = $row['id'];
+            $title = str_replace("MAIN_BUTTONS","",$row['type']);
+            
+            $temp[] =['text'=>$title . $rowId];
+            if(count($temp)>=2){
+                array_push($mainKeys,$temp);
+                $temp = array();
+            }
+        }
+    }
+    array_push($mainKeys,$temp);
+    if($from_id == $admin || $userInfo['isAdmin'] == true) array_push($mainKeys,[['text'=>"مدیریت ربات ⚙️"]]);
+    return json_encode(['keyboard'=>$mainKeys]);
+}
 }
 function getAgentKeys(){
     global $buttonValues, $mainValues, $from_id, $userInfo, $connection;
@@ -1049,7 +1111,7 @@ function getBotSettingKeys(){
             ],
 	[
 	    ['text'=>$mineBTNType,'callback_data'=>'mineBTNType'],
-	    ['text'=>"دکمه شیشه ای",'callback_data'=>'wizwizch']
+	    ['text'=>"منوی شیشه ای",'callback_data'=>'wizwizch'],
 	    ],
         [['text'=>$buttonValues['back_button'],'callback_data'=>"managePanel"]]
         ]]);
