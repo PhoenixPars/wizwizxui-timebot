@@ -2176,36 +2176,40 @@ if ($data == 'message2All' and ($from_id == $admin || $userInfo['isAdmin'] == tr
     $sendInfo = json_decode(file_get_contents("settings/messagewizwiz.json"),true);
     $offset = $sendInfo['offset'];
     $msg = $sendInfo['text'];
-    
+    $sending = $sendInfo['sending'];
+  
     if(strlen($msg) > 1 and $offset != -1) {
         $stmt = $connection->prepare("SELECT * FROM `users`");
         $stmt->execute();
         $usersCount = $stmt->get_result()->num_rows;
         $stmt->close();
-        
+
         $leftMessages = $offset == 0 ? $usersCount - $offset : $usersCount - $offset;
         $offset = $offset == 0 ? $offset : $offset;
-        
-        if(json_decode($sendInfo['text'],true)['type'] == "forwardall"){
+
+        if(json_decode($sendInfo['text'],true)['type'] == "forwardall" && $sending == true){
             sendMessage("
             ❗️ یک فروارد همگانی در صف انتشار می باشد لطفا صبور باشید ...
-            
+
             🔰 تعداد کاربران : $usersCount
             ☑️ فروارد شده : $offset
             📣 باقیمانده : $leftMessages
             ⁮⁮ ⁮⁮ ⁮⁮ ⁮⁮
             ");
+            exit;
         }else{
+          if ($sending == true) {
             sendMessage("
             ❗️ یک پیام همگانی در صف انتشار می باشد لطفا صبور باشید ...
-            
+
             🔰 تعداد کاربران : $usersCount
             ☑️ ارسال شده : $offset
             📣 باقیمانده : $leftMessages
             ⁮⁮ ⁮⁮ ⁮⁮ ⁮⁮
             ");
+            exit;
+          }
         }
-        exit;
     }
     setUser('s2a');
     sendMessage("لطفا پیامت رو بنویس ، میخوام برا همه بفرستمش: 🙂",$cancelKey);
@@ -2225,11 +2229,13 @@ if ($userInfo['step'] == 's2a' and $text != $buttonValues['cancel']){
     else{
         $type = 'text';
         $value = $text;
+        $sending = false;
     }
     $messageValue = json_encode(['type'=>$type,'value'=> $value]);
-    
+
     $sendInfo = json_decode(file_get_contents("settings/messagewizwiz.json"),true);
     $sendInfo['text'] = $messageValue;
+    $sendInfo['sending'] = $sending;
     file_put_contents("settings/messagewizwiz.json",json_encode($sendInfo));
 }
 if($data=="noDontSend2all"){
@@ -2238,14 +2244,15 @@ if($data=="noDontSend2all"){
 if($data=="yesSend2All"){
     $sendInfo = json_decode(file_get_contents("settings/messagewizwiz.json"),true);
     $sendInfo['offset'] = 0;
+    $sendInfo['sending'] = true;
     file_put_contents("settings/messagewizwiz.json",json_encode($sendInfo));
- 
+    
     editText($message_id,'⏳ کم کم برا همه ارسال میشه ...  ',getMainKeys());
 }
 if($data=="forwardToAll" && ($from_id == $admin || $userInfo['isAdmin'] == true)){
     $sendInfo = json_decode(file_get_contents("settings/messagewizwiz.json"),true);
     $offset = $sendInfo['offset'];
-    
+    $sending = $sendInfo['sending'];
 
     if($offset != -1 && !is_null($offset)) {
         $stmt = $connection->prepare("SELECT * FROM `users`");
@@ -2256,7 +2263,7 @@ if($data=="forwardToAll" && ($from_id == $admin || $userInfo['isAdmin'] == true)
         
         $leftMessages = $offset == 0 ? $usersCount - $offset : $usersCount - $offset;
         $offset = $offset == 0 ? $offset : $offset;
-        if(json_decode($sendInfo['text'],true)['type'] == "forwardall"){
+        if(json_decode($sendInfo['text'],true)['type'] == "forwardall" && $sending == true){
             sendMessage("
             ❗️ یک فروارد همگانی در صف انتشار می باشد لطفا صبور باشید ...
             
@@ -2266,6 +2273,7 @@ if($data=="forwardToAll" && ($from_id == $admin || $userInfo['isAdmin'] == true)
             ⁮⁮ ⁮⁮ ⁮⁮ ⁮⁮
             ");
         }else{
+         if ($sending == true) {
             sendMessage("
             ❗️ یک پیام همگانی در صف انتشار می باشد لطفا صبور باشید ...
             
@@ -2274,8 +2282,9 @@ if($data=="forwardToAll" && ($from_id == $admin || $userInfo['isAdmin'] == true)
             📣 باقیمانده : $leftMessages
             ⁮⁮ ⁮⁮ ⁮⁮ ⁮⁮
             ");
+            exit;
+          }          
         }
-        exit;
     }
     
     delMessage();
@@ -2287,6 +2296,8 @@ if($userInfo['step'] == "forwardToAll" && ($from_id == $admin || $userInfo['isAd
     
     $sendInfo = json_decode(file_get_contents("settings/messagewizwiz.json"),true);
     $sendInfo['text'] = $messageValue;
+    $sendInfo['sending'] = true;
+
     file_put_contents("settings/messagewizwiz.json",json_encode($sendInfo));
 
     setUser();
@@ -2295,6 +2306,7 @@ if($userInfo['step'] == "forwardToAll" && ($from_id == $admin || $userInfo['isAd
     [['text'=>"بفرست",'callback_data'=>"yesSend2All"],['text'=>"نه نفرست",'callback_data'=>"noDontSend2all"]]
     ]]));
 }
+
 if(preg_match('/selectServer(\d+)/',$data, $match) && ($botState['sellState']=="on" || ($from_id == $admin || $userInfo['isAdmin'] == true)) ) {
     $sid = $match[1];
         
