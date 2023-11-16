@@ -13,6 +13,9 @@ $connection->query("CREATE TABLE `config_database` (
   `config` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `subscrtion` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `config_database` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `time` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `limit_ip` int(10) NOT NULL,
+  `total_flow` int(10) NOT NULL,
   PRIMARY KEY (`id`)
 )");
 
