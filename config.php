@@ -811,6 +811,7 @@ function getServerListKeys($offset = 0){
         $keys[] = [['text'=>" «« صفحه قبلی ««",'callback_data'=>"nextServerPage" . ($offset - $limit)]];
     }
     $keys[] = [['text'=>'🪙 ثبت سرور جدید','callback_data'=>"addNewServer"]];
+        $keys[] = [['text'=>'🗄 ثبت پایگاه کانفیگ','callback_data'=>"addNewConfigDatabase"]]; 
     $keys[] = [['text' => $buttonValues['back_button'], 'callback_data' => "managePanel"]];
     return json_encode(['inline_keyboard'=>$keys]);
 }
