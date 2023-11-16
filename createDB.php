@@ -7,11 +7,20 @@ if($connection->connect_error){
 }
 $connection->set_charset("utf8mb4");
 
+$connection->query("CREATE TABLE `config_database` (
+  `id` int(255) NOT NULL AUTO_INCREMENT,
+  `remark` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `config` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `subscrtion` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `config_database` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  PRIMARY KEY (`id`)
+)");
+
 $connection->query("CREATE TABLE `Config_dabases` (
   `ID` int(255) NOT NULL AUTO_INCREMENT,
   `name` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `imogi` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`ID`)
 )");
     
 $connection->query("CREATE TABLE `chats` (
