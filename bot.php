@@ -2306,7 +2306,6 @@ if($userInfo['step'] == "forwardToAll" && ($from_id == $admin || $userInfo['isAd
     [['text'=>"بفرست",'callback_data'=>"yesSend2All"],['text'=>"نه نفرست",'callback_data'=>"noDontSend2all"]]
     ]]));
 }
-
 if(preg_match('/selectServer(\d+)/',$data, $match) && ($botState['sellState']=="on" || ($from_id == $admin || $userInfo['isAdmin'] == true)) ) {
     $sid = $match[1];
         
@@ -6456,6 +6455,7 @@ if($data == 'backplan' and ($from_id == $admin || $userInfo['isAdmin'] == true))
     $keyboard[] = [['text'=>'➕ افزودن پلن رهگذر','callback_data'=>"addNewRahgozarPlan"]];
     $keyboard[] = [['text'=>'➕ افزودن پلن حجمی','callback_data'=>"volumePlanSettings"],['text'=>'➕ افزودن پلن زمانی','callback_data'=>"dayPlanSettings"]];
     $keyboard[] = [['text' => "➕ افزودن پلن دلخواه", 'callback_data' => "editCustomPlan"]];
+        $keyboard[] = [['text' => "➕ افزودن کانفیگ", 'callback_data' => "AddConfigsService"]];
     $keyboard[] = [['text' => $buttonValues['back_button'], 'callback_data' => "managePanel"]];
 
     $msg = ' ☑️ مدیریت پلن ها:';
@@ -6469,6 +6469,8 @@ if($data == 'backplan' and ($from_id == $admin || $userInfo['isAdmin'] == true))
     
     exit;
 }
+//if(($data=="AddConfigsService" || preg_match('/^editCustom(gbPrice|dayPrice)/',$userInfo['step'],$match)) && ($from_id == $admin || $userInfo['isAdmin'] == true) && $text != $buttonValues['cancel']){
+
 if(($data=="editCustomPlan" || preg_match('/^editCustom(gbPrice|dayPrice)/',$userInfo['step'],$match)) && ($from_id == $admin || $userInfo['isAdmin'] == true) && $text != $buttonValues['cancel']){
     if(!isset($data)){
         if(is_numeric($text)){
@@ -9036,6 +9038,42 @@ if(preg_match('/^chhangeServerType(\w+)_(\d+)/',$data,$match) && ($from_id == $a
     $keys = getServerConfigKeys($match[2]);
     editText($message_id, "☑️ مدیریت سرور ها: $cname",$keys);
 }
+if($data=='addNewConfigDatabase' and (($from_id == $admin || $userInfo['isAdmin'] == true))){
+    delMessage();
+    setUser('addNewConfigDatabaseName');
+    sendMessage("♻️ - انتخاب نام 
+☑️ - انتخاب ایموج
+
+✍🏻 | یه نام‌ برای پایگاه کانفیگ بنویس",$cancelKey);
+    exit();
+}
+if($userInfo['step'] == 'addNewConfigDatabaseName' and $text != $buttonValues['cancel']) {
+	sendMessage('✅ - انتخاب نام 
+♻️ - انتخاب ایموج
+
+⛑ | یه امیوجی برای پایگاه کانفیگ بده');
+    $data = array();
+    $data['title'] = $text;
+
+    setUser('addNewConfigDatabaseImogi' . json_encode($data,JSON_UNESCAPED_UNICODE));
+    exit();
+}
+if(preg_match('/^addNewConfigDatabaseImogi(.*)/',$userInfo['step'],$match) and $text != $buttonValues['cancel']) {
+    $data = json_decode($match[1],true);
+    $data['imogi'] = $text;
+    $title_PXN = $data['title'];
+
+    $stmt = $connection->prepare("INSERT INTO `Config_dabases` (`ID`, `name`, `imogi`) VALUES (NULL, ?, '$text');");
+    $stmt->bind_param("s", $title_PXN);
+    $stmt->execute();
+    $rowId = $stmt->insert_id;
+    $stmt->close();
+
+    setUser('none_PXN');
+
+    sendMessage(' ✅ | پایگاه داده با نام ' . $data['title'] .''. $text . ' با موفقیت به ربات اضافه شد ',getAdminKeys());
+    exit();
+}
 if($data=='addNewServer' and (($from_id == $admin || $userInfo['isAdmin'] == true))){
     delMessage();
     setUser('addserverName');
@@ -9130,7 +9168,7 @@ if(preg_match('/^addServerRequestHeader(.*)/',$userInfo['step'],$match) and $tex
     $data = json_decode($match[1],true);
     $data['request_header'] = $text;
     setUser('addServerResponseHeader' . json_encode($data, JSON_UNESCAPED_UNICODE));
-    sendMessage( "🔅 لطفا response header پنل را وارد کنید\n\n🔻برای خالی گذاشتن متن /empty را وارد کنید");
+    sendMessage( "🔅 لطفا response header پنل را وارد کنید\n\n  برای خالی گذاشتن متن /empty را وارد کنید");
     exit();
 }
 if(preg_match('/^addServerResponseHeader(.*)/',$userInfo['step'],$match) and $text != $buttonValues['cancel']) {
